@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import "./SignIn.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserCircle } from "@fortawesome/free-solid-svg-icons";
+import Input from "../Input/Input";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../store/hooks";
+import { setToken } from "../store/counter/counterUser";
 
 function SignIn() {
     const [username, setUsername] = useState("");
@@ -10,36 +14,54 @@ function SignIn() {
 
     const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => setUsername(event.target.value);
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value);
-/*     const handleRememberMeChange = (event: React.ChangeEvent<HTMLInputElement>) => setRememberMe(event.target.value);
- */
+    const handleRememberMeChange = (event: React.ChangeEvent<HTMLInputElement>) => setRememberMe(event.target.checked);
 
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+
+    const checkUser = async () => {
+        try {
+            const response = await fetch("http://localhost:3001/api/v1/user/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: username, password }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP : ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Réponse du serveur :", data);
+
+            if (data.status === 200) {
+                dispatch(setToken(data.body.token));
+                navigate("/user");
+            }
+        } catch (error) {
+            console.error("Erreur lors de la connexion :", error);
+        }
+    };
 
     return (
         <main className="main bg-dark">
             <section className="sign-in-content">
                 <FontAwesomeIcon icon={faUserCircle} />
                 <h1>Sign In</h1>
-                <form>
-                    <div className="input-wrapper">
-                        <label>Username</label>
-                        <input type="text" id="username" />
-                    </div>
-                    <div className="input-wrapper">
-                        <label>Password</label>
-                        <input type="password" id="password" />
-                    </div>
-                    <div className="input-remember">
-                        <input type="checkbox" id="remember-me" />
-                        <label>Remember me</label>
-                    </div>
-                    {/*             <!-- PLACEHOLDER DUE TO STATIC SITE -->
-                     */}{" "}
-                    <a href="./user.html" className="sign-in-button">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        checkUser();
+                    }}
+                >
+                    <Input type="text" label="Username" setValue={handleUsernameChange} value={username} />
+                    <Input type="password" label="Password" setValue={handlePasswordChange} value={password} />
+                    <Input type="checkbox" label="Remember me" setValue={handleRememberMeChange} value={rememberMe} />
+                    <button className="sign-in-button" type="submit">
                         Sign In
-                    </a>
-                    {/*   <!-- SHOULD BE THE BUTTON BELOW -->
-            <!-- <button class="sign-in-button">Sign In</button> -->
-            <!--  --> */}
+                    </button>
                 </form>
             </section>
         </main>
