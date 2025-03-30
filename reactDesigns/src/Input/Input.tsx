@@ -10,7 +10,7 @@ function Input({
     type: string;
     value: string | boolean;
     setValue: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    label: string;
+    label?: string;
 }) {
     return (
         <div className={`input-${type === "checkbox" ? "remember" : "wrapper"}`}>
@@ -18,7 +18,7 @@ function Input({
             {type === "checkbox" ? (
                 <input type={type} checked={Boolean(value)} onChange={setValue} />
             ) : (
-                <input type={type} value={String(value)} onChange={setValue} required />
+                <input type={type} value={String(value)} onChange={setValue} />
             )}
         </div>
     );

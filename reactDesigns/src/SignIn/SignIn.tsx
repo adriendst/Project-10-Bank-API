@@ -11,6 +11,7 @@ function SignIn() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [error, setError] = useState<string | undefined>();
 
     const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => setUsername(event.target.value);
     const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value);
@@ -29,19 +30,19 @@ function SignIn() {
                 body: JSON.stringify({ email: username, password }),
             });
 
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP : ${response.status}`);
-            }
-
             const data = await response.json();
-            console.log("Réponse du serveur :", data);
+
+            if (!response.ok) {
+                throw new Error(data.message || `Erreur HTTP : ${response.status}`);
+            }
 
             if (data.status === 200) {
                 dispatch(setToken(data.body.token));
                 navigate("/user");
             }
         } catch (error) {
-            console.error("Erreur lors de la connexion :", error);
+            setError(error.message.split(":")[1]);
+            console.error("Erreur lors de la connexion :", error.message);
         }
     };
 
@@ -50,19 +51,15 @@ function SignIn() {
             <section className="sign-in-content">
                 <FontAwesomeIcon icon={faUserCircle} />
                 <h1>Sign In</h1>
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        checkUser();
-                    }}
-                >
+                <div>
                     <Input type="text" label="Username" setValue={handleUsernameChange} value={username} />
                     <Input type="password" label="Password" setValue={handlePasswordChange} value={password} />
                     <Input type="checkbox" label="Remember me" setValue={handleRememberMeChange} value={rememberMe} />
-                    <button className="sign-in-button" type="submit">
+                    {error && <p className="errorMessage">{error}</p>}
+                    <button className="sign-in-button" onClick={checkUser}>
                         Sign In
                     </button>
-                </form>
+                </div>
             </section>
         </main>
     );

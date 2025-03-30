@@ -18,7 +18,7 @@ function NavBar() {
                 <h1 className="sr-only">Argent Bank</h1>
             </Link>
             <div>
-                <Link className="main-nav-item" to="/sign-in">
+                <Link className="main-nav-item" to={userInfo.user.firstName ? "user" : "/sign-in"}>
                     <FontAwesomeIcon icon={faUserCircle} />
                     {userInfo.user.firstName === "" ? <div>Sign In</div> : <div>{userInfo.user.firstName}</div>}
                 </Link>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setUser } from "../store/counter/counterUser";
 import Input from "../Input/Input";
+import Account from "../Account/Account";
 
 export type User = {
     createdAt: string;
@@ -26,6 +27,8 @@ function User() {
             navigate("/home");
             return;
         }
+
+        if (user.firstName !== "") return;
 
         const fetchUserProfile = async () => {
             try {
@@ -55,6 +58,7 @@ function User() {
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [showError, setShowError] = useState(false);
 
     useEffect(() => {
         setFirstName(user.firstName);
@@ -66,7 +70,17 @@ function User() {
 
     const [isUserEditing, setIsUserEditing] = useState(false);
 
+    const cancelChange = () => {
+        setFirstName(user.firstName);
+        setLastName(user.lastName);
+        setIsUserEditing(false);
+    };
+
     const confirmChange = async () => {
+        if (firstName === "" || lastName === "") {
+            setShowError(true);
+            return;
+        }
         try {
             const response = await fetch("http://localhost:3001/api/v1/user/profile", {
                 method: "PUT",
@@ -83,6 +97,7 @@ function User() {
 
             const data = await response.json();
             setIsUserEditing(false);
+            setShowError(false);
             dispatch(setUser(data.body));
         } catch (error) {
             console.error("Error updating user profile:", error);
@@ -93,11 +108,10 @@ function User() {
     return (
         <main className="main bg-dark">
             <div className="header">
+                <h1>Welcome back</h1>
                 {!isUserEditing ? (
                     <>
                         <h1>
-                            Welcome back
-                            <br />
                             {firstName} {lastName}!
                         </h1>
                         <button className="edit-button" onClick={() => setIsUserEditing(true)}>
@@ -105,51 +119,27 @@ function User() {
                         </button>
                     </>
                 ) : (
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            confirmChange();
-                        }}
-                    >
-                        <Input label="First Name" type="text" setValue={handleFirstNameChange} value={firstName} />
-                        <Input label="Last Name" type="text" setValue={handleLastNameChange} value={lastName} />
-                        <button className="edit-button" type="submit">
-                            Confirm
-                        </button>
-                    </form>
+                    <>
+                        <div className="headerChange">
+                            <Input type="text" setValue={handleFirstNameChange} value={firstName} />
+                            <Input type="text" setValue={handleLastNameChange} value={lastName} />
+                        </div>
+                        {showError && <p className="errorMessage">Both fields must be filled</p>}
+                        <div className="headerChange">
+                            <button className="edit-button" onClick={confirmChange}>
+                                Save
+                            </button>
+                            <button className="edit-button" onClick={cancelChange}>
+                                Cancel
+                            </button>
+                        </div>
+                    </>
                 )}
             </div>
             <h2 className="sr-only">Accounts</h2>
-            <section className="account">
-                <div className="account-content-wrapper">
-                    <h3 className="account-title">Argent Bank Checking (x8349)</h3>
-                    <p className="account-amount">$2,082.79</p>
-                    <p className="account-amount-description">Available Balance</p>
-                </div>
-                <div className="account-content-wrapper cta">
-                    <button className="transaction-button">View transactions</button>
-                </div>
-            </section>
-            <section className="account">
-                <div className="account-content-wrapper">
-                    <h3 className="account-title">Argent Bank Savings (x6712)</h3>
-                    <p className="account-amount">$10,928.42</p>
-                    <p className="account-amount-description">Available Balance</p>
-                </div>
-                <div className="account-content-wrapper cta">
-                    <button className="transaction-button">View transactions</button>
-                </div>
-            </section>
-            <section className="account">
-                <div className="account-content-wrapper">
-                    <h3 className="account-title">Argent Bank Credit Card (x8349)</h3>
-                    <p className="account-amount">$184.30</p>
-                    <p className="account-amount-description">Current Balance</p>
-                </div>
-                <div className="account-content-wrapper cta">
-                    <button className="transaction-button">View transactions</button>
-                </div>
-            </section>
+            <Account amount="2,082.79" description="Available Balance" title="Argent Bank Checking (x8349)" />
+            <Account amount="10,928.42" description="Available Balance" title="Argent Bank Savings (x6712)" />
+            <Account amount="184.30" description="Current Balance" title="Argent Bank Checking (x8349)" />
         </main>
     );
 }
