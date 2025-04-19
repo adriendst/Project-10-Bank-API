@@ -110,7 +110,7 @@ paths:
                     description: Invalid Fields
                 "500":
                     description: Internal Server Error
-    /transactions:
+    /accounts/{accountId}/transactions:
         get:
             security:
                 - Bearer: []
@@ -118,6 +118,18 @@ paths:
                 - Transactions Module
             summary: Retrieve all user transactions per month
             description: API for fetching user all user transactions per month
+            parameters:
+                - in: path
+                  name: accountId
+                  required: true
+                  type: string
+                  description: ID of the account
+                - in: body
+                  name: body
+                  description: Update user profile attributes
+                  required: true
+                  schema:
+                      $ref: "#/definitions/AccountTransactions"
             produces:
                 - application/json
             responses:
@@ -129,7 +141,7 @@ paths:
                     description: Unauthorized
                 "500":
                     description: Internal Server Error
-    /transactions/{transactionId}:
+    /accounts/{accountId}/transactions/{transactionId}:
         get:
             security:
                 - Bearer: []
@@ -138,6 +150,11 @@ paths:
             summary: Retrieve data from specific user transaction
             description: API for fetching data from specific user transaction
             parameters:
+                - in: path
+                  name: accountId
+                  required: true
+                  type: string
+                  description: ID of the account
                 - in: path
                   name: transactionId
                   required: true
@@ -156,47 +173,19 @@ paths:
                     description: Transaction not found
                 "500":
                     description: Internal Server Error
-        put:
-            security:
-                - Bearer: []
-            tags:
-                - Transactions Module
-            summary: User Transaction API update transaction
-            description: API for updtating a user transaction
-            parameters:
-                - in: path
-                  name: transactionId
-                  required: true
-                  type: string
-                  description: ID of the transaction to update
-                - in: body
-                  name: body
-                  required: true
-                  schema:
-                      $ref: "#/definitions/Transaction"
-            produces:
-                - application/json
-            responses:
-                "200":
-                    description: Transaction updated successfully
-                    schema:
-                        $ref: "#/definitions/Transaction"
-                "400":
-                    description: Invalid request data
-                "401":
-                    description: Unauthorized
-                "404":
-                    description: Transaction not found
-                "500":
-                    description: Internal Server Error
         patch:
             security:
                 - Bearer: []
             tags:
                 - Transactions Module
-            summary: User Transaction API modify note
-            description: API for deleting a note on a transaction
+            summary: User Transaction API modify single element
+            description: API for deleting an element (note / category) on a transaction
             parameters:
+                - in: path
+                  name: accountId
+                  required: true
+                  type: string
+                  description: ID of the account
                 - in: path
                   name: transactionId
                   required: true
@@ -269,6 +258,13 @@ definitions:
             firstName:
                 type: string
             lastName:
+                type: string
+    AccountTransactions:
+        type: object
+        properties:
+            year:
+                type: string
+            month:
                 type: string
     TransactionsResponse:
         type: object
